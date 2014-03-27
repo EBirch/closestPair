@@ -8,7 +8,7 @@ def dist(p1, p2)
 end
 
 def dumbAlgo(points)
-	points.map{|x| points.map{|y| x == y ? Float::INFINITY : dist(x, y)}.min}.min
+	(0..points.size).map{|x| (x..points.size).map{|y| x == y ? Float::INFINITY : dist(points[x], points[y])}.min}.min
 end
 
 def slowDC(points)
@@ -28,8 +28,16 @@ def fastDC(points)
 	[min, (0..strip.size).map{|x| (1..6).map{|y| dist(strip[x], strip[x + y])}.min}.min].min
 end
 
+start = Time.now
 puts dumbAlgo(points)
+puts "#{ARGV.first} DumbAlgo: #{Time.now - start} seconds"
 
 points.sort!{|x, y| x.first <=> y.first}
+
+start = Time.now
 puts slowDC(points)
+puts "#{ARGV.first} SlowD&C: #{Time.now - start} seconds"
+
+start = Time.now
 puts fastDC(points)
+puts "#{ARGV.first} FastD&C: #{Time.now - start} seconds"
