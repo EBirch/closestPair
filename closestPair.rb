@@ -1,6 +1,12 @@
 #!/usr/bin/ruby
 
-points = Array.new(ARGV.first.to_i){[rand(100), rand(100)]}
+randPoints = Array.new(ARGV.first.to_i){[rand() * 100, rand() * 100]}
+num = Math.sqrt(ARGV.first.to_i)
+space = 100.0 / num
+vOff = space / 2.0
+hOff = Math.sqrt((space ** 2) - (vOff ** 2))
+uniformPoints = (0..num).inject([]){|arr, i| (0..num).inject(arr){|arr, j| arr << [i * hOff, j * space + (i.even? ? vOff : 0)]}}[0...ARGV.first.to_i]
+mixedPoints = Array.new(ARGV.first.to_i){|x| rand() < 0.95 ? uniformPoints[x] : [rand() * 100, rand() * 100]}
 
 def dist(p1, p2)
 	return Float::INFINITY if p1.nil? || p2.nil?
@@ -28,16 +34,18 @@ def fastDC(points)
 	[min, (0..strip.size).map{|x| (1..6).map{|y| dist(strip[x], strip[x + y])}.min}.min].min
 end
 
-start = Time.now
-puts dumbAlgo(points)
-puts "#{ARGV.first} DumbAlgo: #{Time.now - start} seconds"
+def timeRun(proc, str)
+	start = Time.now
+	proc.call
+	puts "#{ARGV.first} #{str}: #{Time.now - start} seconds"
+end
 
-points.sort!{|x, y| x.first <=> y.first}
-
-start = Time.now
-puts slowDC(points)
-puts "#{ARGV.first} SlowD&C: #{Time.now - start} seconds"
-
-start = Time.now
-puts fastDC(points)
-puts "#{ARGV.first} FastD&C: #{Time.now - start} seconds"
+timeRun(Proc.new{dumbAlgo(randPoints)}, "DumbAlgo Random")
+timeRun(Proc.new{dumbAlgo(uniformPoints)}, "DumbAlgo Uniform")
+timeRun(Proc.new{dumbAlgo(mixedPoints)}, "DumbAlgo Mixed")
+timeRun(Proc.new{slowDC(randPoints.sort{|x, y| x.first <=> y.first})}, "SlowD&C Random")
+timeRun(Proc.new{slowDC(uniformPoints.sort{|x, y| x.first <=> y.first})}, "SlowD&C Uniform")
+timeRun(Proc.new{slowDC(mixedPoints.sort{|x, y| x.first <=> y.first})}, "SlowD&C Mixed")
+timeRun(Proc.new{fastDC(randPoints.sort{|x, y| x.first <=> y.first})}, "FastD&C Random")
+timeRun(Proc.new{fastDC(uniformPoints.sort{|x, y| x.first <=> y.first})}, "FastD&C Uniform")
+timeRun(Proc.new{fastDC(mixedPoints.sort{|x, y| x.first <=> y.first})}, "FastD&C Mixed")
